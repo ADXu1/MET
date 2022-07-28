@@ -1,0 +1,76 @@
+**使用Google Colab来对Donkey Car进行训练**
+author@Allen
+
+安装 TensorFlow 
+
+!pip install tensorflow-gpu==2.8.1
+
+检查GPU是否可以正常使用
+
+import tensorflow as tf
+device_name = tf.test.gpu_device_name()
+if device_name != '/device:GPU:0':
+  raise SystemError('GPU device not found')
+print('Found GPU at: {}'.format(device_name))
+
+克隆Donkey respository
+
+!git clone https://github.com/autorope/donkeycar.git donkey
+
+安装 Donkey car
+
+!pip3 install -e donkey
+
+创建项目
+
+!donkey createcar --path /content/mycar
+
+from google.colab import drive
+drive.mount('/content/drive')
+
+上传data.zip到Colab
+将小车里的mycar文件中data压缩上传此处
+
+import os
+from google.colab import files
+if(os.path.exists("/content/data.zip")):
+   os.remove("/content/data.zip")
+if(os.path.exists("/content/mycar/data/data.zip")):
+   os.remove("/content/mycar/data/data.zip")
+   
+uploaded = files.upload()
+WORK_FOLDER = "/content/mycar/data/"
+if(os.path.exists(WORK_FOLDER) == False):
+  os.makedirs(WORK_FOLDER)
+!mv /content/data.zip /content/mycar/data/
+%cd /content/mycar/data/
+!unzip -o data.zip
+
+清理已经上传的文件
+data.zip太大了直接删掉好了
+
+!rm /content/mycar/data/data.zip
+
+训练模型
+
+!python /content/mycar/manage.py train --model /content/mycar/models/mypilot.h5
+
+!python /content/mycar/manage.py train
+
+显示训练结果
+
+import matplotlib.pyplot as plt
+import cv2
+import glob
+import os
+list_of_png = glob.glob('/content/mycar/models/*png')
+latest_png = max(list_of_png, key=os.path.getctime)
+image = cv2.imread(latest_png)
+plt.imshow(image)
+
+将训练好的模型放回 Donkey Car.
+一旦模型训练完毕,你可以在 mycar/models中找到训练好的模型
+1.下载mypilot文件到你到PC或Mac
+2. 再从PC或Mac拷贝模型到你到pi
+
+开始自动驾驶吧！
